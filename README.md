@@ -36,7 +36,11 @@ A full-stack **fleet management system** for tracking vehicles, trips, and route
 
 ```
 FleetTracker/
+├── database/
+│   ├── schema.sql          # Table definitions (vehicles, routes, stops, trips, location_updates)
+│   └── sample-data.sql     # Seed data for local development
 ├── backend/
+│   ├── .env.example        # Environment variable template
 │   └── src/main/java/com/example/backend/
 │       ├── config/          # CORS, OpenAPI
 │       ├── controller/      # VehicleController, TripController, RouteController ...
@@ -68,12 +72,29 @@ FleetTracker/
 
 ### 1. Configure the database
 
-Create a `.env` file inside `backend/`:
+Copy the example env file and fill in your credentials:
+
+```bash
+cp backend/.env.example backend/.env
+```
 
 ```env
 DB_URL=jdbc:postgresql://localhost:5432/db_fleet
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+```
+
+Then create the database and run the schema:
+
+```bash
+psql -U postgres -c "CREATE DATABASE db_fleet;"
+psql -U postgres -d db_fleet -f database/schema.sql
+```
+
+Optionally seed sample data (5 vehicles, 3 routes, 5 trips, location history):
+
+```bash
+psql -U postgres -d db_fleet -f database/sample-data.sql
 ```
 
 ### 2. Start the backend
