@@ -1,8 +1,6 @@
 # FleetTracker
 
-Transportation/Fintech: Automated Fare Collection (NFC/QR Simulator)
-
-A full-stack application for managing fleet operations and automated fare collection using NFC/QR simulation technology.
+A full-stack **fleet management system** for tracking vehicles, trips, and routes in real time. Built with a Spring Boot REST API and an Angular single-page application.
 
 ---
 
@@ -10,12 +8,27 @@ A full-stack application for managing fleet operations and automated fare collec
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Spring Boot 3.5.11 (Java 21) |
-| Frontend | Angular 21.2.0 (Standalone Components) |
-| Database | PostgreSQL |
-| Styling | Tailwind CSS 4.1.12 |
+| Backend | Spring Boot 3.5 (Java 21) |
+| Frontend | Angular 21 (Standalone Components + Signals) |
+| Database | PostgreSQL + PostGIS |
+| Map | Leaflet.js |
+| Styling | Tailwind CSS 4 |
+| Real-time | Spring WebSocket (STOMP) |
+| API Docs | SpringDoc OpenAPI (Swagger UI) |
 | Build (BE) | Maven |
-| Build (FE) | Angular CLI 21.2.2 |
+| Build (FE) | Angular CLI 21 |
+
+---
+
+## Features
+
+- **Dashboard** — stats cards (total / active / in-transit / maintenance), interactive fleet map with live vehicle markers, active trips panel with click-to-locate, recent trips table
+- **Fleet Map** — Leaflet map with color-coded markers per vehicle status; clicking an active trip flies the map to that vehicle and opens its popup
+- **Vehicle Management** — full CRUD, status filtering (All / Active / In Transit / Maintenance / Inactive), optional GPS coordinates
+- **Trip Management** — create/edit trips with vehicle & route selection, one-click status transitions (Start → In Progress → Complete / Cancel)
+- **Route Management** — create/edit routes with active/inactive toggle and description
+- **Geospatial Storage** — vehicle positions stored as PostGIS geometry points, exposed as lat/lng via REST
+- **API Documentation** — Swagger UI at `http://localhost:8080/swagger-ui.html`
 
 ---
 
@@ -23,103 +36,25 @@ A full-stack application for managing fleet operations and automated fare collec
 
 ```
 FleetTracker/
-├── backend/                  # Spring Boot REST API
-│   ├── src/main/java/com/example/backend/
-│   │   └── BackendApplication.java
-│   ├── src/main/resources/
-│   │   └── application.properties
-│   └── pom.xml
-├── frontend/                 # Angular SPA
-│   ├── src/app/
-│   │   ├── app.ts
-│   │   ├── app.html
-│   │   ├── app.routes.ts
-│   │   └── app.config.ts
-│   ├── angular.json
-│   └── package.json
+├── backend/
+│   └── src/main/java/com/example/backend/
+│       ├── config/          # CORS, OpenAPI
+│       ├── controller/      # VehicleController, TripController, RouteController ...
+│       ├── service/         # Business logic
+│       ├── repository/      # Spring Data JPA
+│       ├── model/           # JPA entities + enums
+│       └── dto/             # Request / Response DTOs
+├── frontend/
+│   └── src/app/
+│       ├── dashboard/       # Dashboard page
+│       ├── vehicles/        # Vehicles page
+│       ├── trips/           # Trips page
+│       ├── routes/          # Routes page
+│       ├── layout/          # Sidebar + shell layout
+│       ├── models/          # TypeScript interfaces & enums
+│       └── services/        # HTTP services (vehicle, trip, route, location)
 └── README.md
 ```
-
----
-
-## Backend
-
-Built with **Spring Boot 3.5.11** on **Java 21**, using Maven as the build tool.
-
-### Dependencies
-
-| Package | Purpose |
-|---------|---------|
-| spring-boot-starter-web | REST API development |
-| spring-boot-starter-data-jpa | ORM & database persistence |
-| spring-boot-starter-websocket | Real-time WebSocket communication |
-| postgresql | PostgreSQL JDBC driver |
-| lombok | Boilerplate reduction (getters/setters/constructors) |
-| spring-boot-starter-test | Unit testing (JUnit 5) |
-
-### Configuration
-
-- Application name: `backend`
-- Config file: `src/main/resources/application.properties`
-- Entry point: `BackendApplication.java` with `@SpringBootApplication`
-
-### Running the Backend
-
-```bash
-./mvnw spring-boot:run
-```
-
----
-
-## Frontend
-
-Built with **Angular 21.2.0** using standalone components (no NgModule), styled with **Tailwind CSS**.
-
-### Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| @angular/core | ^21.2.0 | Core Angular framework |
-| @angular/router | ^21.2.0 | Client-side routing |
-| @angular/forms | ^21.2.0 | Reactive and template forms |
-| @angular/common | ^21.2.0 | Common directives and pipes |
-| rxjs | ~7.8.0 | Reactive programming |
-| tailwindcss | ^4.1.12 | Utility-first CSS framework |
-
-### Architecture
-
-- **Components**: Standalone (no NgModule required)
-- **State Management**: Angular Signals API
-- **Routing**: Angular Router (`app.routes.ts`)
-- **Styling**: Tailwind CSS via PostCSS, with component-level inline CSS
-- **Code Formatting**: Prettier (100-char width, single quotes, Angular HTML parser)
-
-### TypeScript Configuration
-
-- Target: ES2022
-- Strict mode: enabled
-- Strict Angular template checking: enabled
-
-### Development Commands
-
-```bash
-npm start        # Dev server at http://localhost:4200
-npm run build    # Production build (output: dist/)
-npm run watch    # Watch mode build
-npm test         # Run tests with Vitest
-```
-
-### Testing
-
-- Framework: **Vitest 4.0.8** with jsdom
-- Test file: `src/app/app.spec.ts`
-
-### Build Budgets (Production)
-
-| Type | Warning | Error |
-|------|---------|-------|
-| Initial bundle | 500 kB | 1 MB |
-| Component styles | 4 kB | 8 kB |
 
 ---
 
@@ -129,16 +64,31 @@ npm test         # Run tests with Vitest
 
 - Java 21+
 - Node.js 18+
-- PostgreSQL running locally
+- PostgreSQL with PostGIS extension
 
-### 1. Start the Backend
+### 1. Configure the database
+
+Create a `.env` file inside `backend/`:
+
+```env
+DB_URL=jdbc:postgresql://localhost:5432/db_fleet
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+### 2. Start the backend
 
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-### 2. Start the Frontend
+Backend runs at `http://localhost:8080`.
+Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+> On Windows use `mvnw.cmd spring-boot:run`
+
+### 3. Start the frontend
 
 ```bash
 cd frontend
@@ -146,7 +96,41 @@ npm install
 npm start
 ```
 
-The app will be available at [http://localhost:4200](http://localhost:4200).
+App runs at `http://localhost:4200`.
+
+---
+
+## Backend Overview
+
+| Package | Purpose |
+|---------|---------|
+| spring-boot-starter-web | REST controllers |
+| spring-boot-starter-data-jpa | ORM & persistence |
+| spring-boot-starter-websocket | Real-time STOMP messaging |
+| hibernate-spatial | PostGIS geometry column support |
+| postgresql | JDBC driver |
+| lombok | Boilerplate reduction |
+| springdoc-openapi | Swagger UI & OpenAPI 3 spec |
+
+## Frontend Overview
+
+| Package | Purpose |
+|---------|---------|
+| @angular/core 21 | Standalone components, Signals API |
+| @angular/router | Lazy-loaded client-side routing |
+| @angular/forms | Template-driven forms |
+| leaflet | Interactive maps |
+| @stomp/stompjs + sockjs-client | WebSocket real-time layer |
+| rxjs | Reactive HTTP with forkJoin |
+| tailwindcss 4 | Utility-first styling |
+
+### Development commands
+
+```bash
+npm start        # Dev server → http://localhost:4200
+npm run build    # Production build (output: dist/)
+npm test         # Run tests with Vitest
+```
 
 ---
 
