@@ -59,6 +59,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   );
   recentTrips = computed(() => [...this.trips()].slice(0, 10));
 
+  selectedTripId = signal<number | null>(null);
+
   ngOnInit(): void {
     this.loadData();
   }
@@ -168,6 +170,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   refresh(): void {
     this.loadData();
+  }
+
+  focusTrip(trip: Trip): void {
+    this.selectedTripId.set(trip.id);
+    const vehicle = this.vehicles().find(v => v.id === trip.vehicleId);
+    if (!vehicle?.latitude || !vehicle?.longitude || !this.map) return;
+    this.map.flyTo([vehicle.latitude, vehicle.longitude], 14, { duration: 1.2 });
+    const marker = this.markers.get(vehicle.id);
+    if (marker) {
+      setTimeout(() => marker.openPopup(), 1300);
+    }
   }
 
   tripBadgeClass(status: TripStatus): string {

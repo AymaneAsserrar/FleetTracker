@@ -194,6 +194,9 @@
               {{ activeTrips().length }}
             </span>
           </div>
+          @if (activeTrips().length > 0) {
+            <p class="text-xs text-gray-400 mt-0.5">Click a trip to locate on map</p>
+          }
 
           <div class="flex-1 overflow-y-auto divide-y divide-gray-50">
             @if (loading()) {
@@ -216,7 +219,12 @@
               </div>
             } @else {
               @for (trip of activeTrips(); track trip.id) {
-                <div class="px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                <div
+                  (click)="focusTrip(trip)"
+                  [class]="selectedTripId() === trip.id
+                    ? 'px-5 py-3.5 bg-indigo-50 border-l-2 border-indigo-500 cursor-pointer transition-colors'
+                    : 'px-5 py-3.5 hover:bg-gray-50 border-l-2 border-transparent cursor-pointer transition-colors'"
+                >
                   <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
                       <p class="text-sm font-semibold text-gray-800 truncate">
@@ -226,9 +234,17 @@
                         {{ trip.routeName || 'Route #' + trip.routeId }}
                       </p>
                     </div>
-                    <span class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
-                      Live
-                    </span>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      @if (selectedTripId() === trip.id) {
+                        <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      }
+                      <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+                        Live
+                      </span>
+                    </div>
                   </div>
                   <p class="text-xs text-gray-400 mt-1.5">
                     Started {{ formatTime(trip.startTime) }}
