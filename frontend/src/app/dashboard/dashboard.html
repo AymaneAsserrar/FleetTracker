@@ -1,0 +1,327 @@
+<div class="flex flex-col h-full overflow-hidden">
+
+  <!-- Page Header -->
+  <header class="shrink-0 bg-white border-b border-gray-200 px-6 h-16 flex items-center justify-between">
+    <div>
+      <h1 class="text-base font-semibold text-gray-900">Dashboard</h1>
+      <p class="text-xs text-gray-500 mt-0.5">Fleet overview &amp; real-time monitoring</p>
+    </div>
+    <div class="flex items-center gap-3">
+      @if (error()) {
+        <span class="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full">
+          Backend offline
+        </span>
+      }
+      <button
+        (click)="refresh()"
+        [disabled]="loading()"
+        class="flex items-center gap-1.5 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+      >
+        <svg
+          class="w-4 h-4"
+          [class.animate-spin]="loading()"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <!-- Scrollable content -->
+  <div class="flex-1 overflow-y-auto bg-gray-50">
+    <div class="max-w-7xl mx-auto p-6 space-y-5">
+
+      <!-- Error banner -->
+      @if (error()) {
+        <div class="bg-red-50 border border-red-200 rounded-xl px-5 py-4 flex items-start gap-3">
+          <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p class="text-sm font-medium text-red-800">Connection error</p>
+            <p class="text-sm text-red-600 mt-0.5">{{ error() }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Stats cards -->
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <!-- Total Vehicles -->
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Vehicles</p>
+              <p class="text-3xl font-bold text-gray-900 mt-2">
+                @if (loading()) {
+                  <span class="text-gray-200">—</span>
+                } @else {
+                  {{ totalVehicles() }}
+                }
+              </p>
+            </div>
+            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                  d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM1 3h14v11H1V3zm14 3h3l3 3v4h-6V6z" />
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-3">Registered in fleet</p>
+        </div>
+
+        <!-- Active -->
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Active</p>
+              <p class="text-3xl font-bold text-emerald-600 mt-2">
+                @if (loading()) {
+                  <span class="text-gray-200">—</span>
+                } @else {
+                  {{ activeVehicles() }}
+                }
+              </p>
+            </div>
+            <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-3">Ready to dispatch</p>
+        </div>
+
+        <!-- In Transit -->
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">In Transit</p>
+              <p class="text-3xl font-bold text-blue-600 mt-2">
+                @if (loading()) {
+                  <span class="text-gray-200">—</span>
+                } @else {
+                  {{ inTransitVehicles() }}
+                }
+              </p>
+            </div>
+            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                  d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-3">Currently on route</p>
+        </div>
+
+        <!-- Maintenance -->
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Maintenance</p>
+              <p class="text-3xl font-bold text-amber-600 mt-2">
+                @if (loading()) {
+                  <span class="text-gray-200">—</span>
+                } @else {
+                  {{ maintenanceVehicles() }}
+                }
+              </p>
+            </div>
+            <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-3">Under service</p>
+        </div>
+
+      </div>
+
+      <!-- Fleet Map + Active Trips -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+        <!-- Fleet Map -->
+        <div class="lg:col-span-3 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              <h2 class="text-sm font-semibold text-gray-800">Fleet Map</h2>
+            </div>
+            <!-- Legend -->
+            <div class="hidden sm:flex items-center gap-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Active
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>In Transit
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>Maintenance
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-gray-400 inline-block"></span>Inactive
+              </span>
+            </div>
+          </div>
+          <!-- Map container — always rendered so ViewChild is available -->
+          <div #mapContainer class="h-96 w-full"></div>
+        </div>
+
+        <!-- Active Trips panel -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+          <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <h2 class="text-sm font-semibold text-gray-800">Active Trips</h2>
+            </div>
+            <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full">
+              {{ activeTrips().length }}
+            </span>
+          </div>
+
+          <div class="flex-1 overflow-y-auto divide-y divide-gray-50">
+            @if (loading()) {
+              @for (i of [1, 2, 3, 4]; track i) {
+                <div class="px-5 py-4 animate-pulse">
+                  <div class="h-3.5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+                </div>
+              }
+            } @else if (activeTrips().length === 0) {
+              <div class="flex flex-col items-center justify-center py-10 px-5 text-center h-full">
+                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                  <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-gray-500">No active trips</p>
+                <p class="text-xs text-gray-400 mt-1">All vehicles are currently idle</p>
+              </div>
+            } @else {
+              @for (trip of activeTrips(); track trip.id) {
+                <div class="px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-gray-800 truncate">
+                        {{ trip.vehicleName || 'Vehicle #' + trip.vehicleId }}
+                      </p>
+                      <p class="text-xs text-gray-500 truncate mt-0.5">
+                        {{ trip.routeName || 'Route #' + trip.routeId }}
+                      </p>
+                    </div>
+                    <span class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+                      Live
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1.5">
+                    Started {{ formatTime(trip.startTime) }}
+                  </p>
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Trips table -->
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+          <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h2 class="text-sm font-semibold text-gray-800">Recent Trips</h2>
+          @if (!loading()) {
+            <span class="text-xs text-gray-400 ml-auto">Last {{ recentTrips().length }} trips</span>
+          }
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50/70 border-b border-gray-100">
+                <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3 whitespace-nowrap">Vehicle</th>
+                <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3 whitespace-nowrap">Route</th>
+                <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3 whitespace-nowrap">Status</th>
+                <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3 whitespace-nowrap">Started</th>
+                <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3 whitespace-nowrap">Ended</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              @if (loading()) {
+                @for (i of [1, 2, 3, 4, 5]; track i) {
+                  <tr>
+                    <td class="px-5 py-3.5">
+                      <div class="h-3.5 bg-gray-200 rounded w-28 animate-pulse"></div>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <div class="h-3.5 bg-gray-100 rounded w-20 animate-pulse"></div>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <div class="h-5 bg-gray-100 rounded-full w-20 animate-pulse"></div>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <div class="h-3 bg-gray-100 rounded w-28 animate-pulse"></div>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <div class="h-3 bg-gray-100 rounded w-20 animate-pulse"></div>
+                    </td>
+                  </tr>
+                }
+              } @else if (recentTrips().length === 0) {
+                <tr>
+                  <td colspan="5" class="px-5 py-12 text-center">
+                    <p class="text-sm text-gray-500">No trips recorded yet</p>
+                    <p class="text-xs text-gray-400 mt-1">Trips will appear here once created</p>
+                  </td>
+                </tr>
+              } @else {
+                @for (trip of recentTrips(); track trip.id) {
+                  <tr class="hover:bg-gray-50/70 transition-colors">
+                    <td class="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap">
+                      {{ trip.vehicleName || 'Vehicle #' + trip.vehicleId }}
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-600 whitespace-nowrap">
+                      {{ trip.routeName || 'Route #' + trip.routeId }}
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <span [class]="tripBadgeClass(trip.status)">
+                        {{ tripStatusLabel(trip.status) }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-500 whitespace-nowrap">
+                      {{ formatTime(trip.startTime) }}
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-500 whitespace-nowrap">
+                      {{ formatTime(trip.endTime) }}
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

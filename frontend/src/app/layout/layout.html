@@ -1,0 +1,81 @@
+<div class="flex h-screen bg-gray-50 overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-60 shrink-0 bg-slate-900 flex flex-col">
+
+    <!-- Brand -->
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-slate-700/60">
+      <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM5 17H3V9l4-5h9l4 5v3m-8 5V9" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-white font-semibold text-sm leading-none">FleetTracker</p>
+        <p class="text-slate-400 text-xs mt-0.5">Fleet Management</p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-4 space-y-0.5">
+
+      <a routerLink="/dashboard" routerLinkActive="bg-indigo-600 text-white"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors group">
+        <!-- Dashboard icon -->
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-2a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+        </svg>
+        <span class="text-sm font-medium">Dashboard</span>
+      </a>
+
+      <a routerLink="/vehicles" routerLinkActive="bg-indigo-600 text-white"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+        <!-- Truck icon -->
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+            d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM1 3h14v11H1V3zm14 3h3l3 3v4h-6V6z" />
+        </svg>
+        <span class="text-sm font-medium">Vehicles</span>
+      </a>
+
+      <a routerLink="/trips" routerLinkActive="bg-indigo-600 text-white"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+        <!-- Lightning / trip icon -->
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+            d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        <span class="text-sm font-medium">Trips</span>
+      </a>
+
+      <a routerLink="/routes" routerLinkActive="bg-indigo-600 text-white"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+        <!-- Map icon -->
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        </svg>
+        <span class="text-sm font-medium">Routes</span>
+      </a>
+
+    </nav>
+
+    <!-- Footer -->
+    <div class="px-4 py-3.5 border-t border-slate-700/60">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-slate-400 text-xs">System Online</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Main area -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <router-outlet />
+  </div>
+
+</div>
