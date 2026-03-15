@@ -1,6 +1,9 @@
 # Claude Code
 .claude/
 
+# Editor
+.vscode/
+
 # Angular specific
 /dist/
 /out-tsc/
