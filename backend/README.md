@@ -28,7 +28,7 @@ Spring Boot REST API backend for the FleetTracker fleet management system. Provi
 | postgresql | PostgreSQL JDBC driver (runtime) |
 | lombok | Reduces boilerplate (getters, setters, constructors) |
 | spring-dotenv | Loads `.env` file as Spring properties |
-| springdoc-openapi-starter-webmvc-ui | Swagger UI & OpenAPI 3 docs |
+| springdoc-openapi-starter-webmvc-ui 2.8.16 | Swagger UI & OpenAPI 3 docs |
 | spring-boot-starter-test | Unit & integration testing (JUnit 5) |
 
 ---
@@ -97,7 +97,7 @@ backend/
 Database credentials are loaded from a `.env` file in the `backend/` directory:
 
 ```env
-DB_URL=jdbc:postgresql://localhost:5432/fleet_db
+DB_URL=jdbc:postgresql://localhost:5432/db_fleet
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
 ```

@@ -1,59 +1,99 @@
-# Frontend
+# FleetTracker — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.2.
+Angular frontend for the FleetTracker fleet management system. Displays vehicles, routes, trips, and real-time GPS location tracking on an interactive map.
 
-## Development server
+---
 
-To start a local development server, run:
+## Tech Stack
+
+| Technology | Version |
+|---|---|
+| Angular | 21 |
+| TypeScript | 5.x |
+| Leaflet | 1.9.4 (interactive maps) |
+| Tailwind CSS | 4.x |
+| RxJS | 7.8 |
+| STOMP / SockJS | 7.3 / 1.6 (WebSocket) |
+
+---
+
+## Prerequisites
+
+- Node.js 18+
+- Angular CLI: `npm install -g @angular/cli`
+- Backend running on `http://localhost:8080`
+
+---
+
+## Setup
 
 ```bash
+cd frontend
+npm install
+```
+
+---
+
+## Running the Dev Server
+
+```bash
+npm start
+# or
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open `http://localhost:4200` in your browser. The app reloads automatically on file changes.
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## Building for Production
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Output is placed in `dist/`. The production build is optimized for performance.
 
-## Running unit tests
+---
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Running Tests
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## Project Structure
 
-```bash
-ng e2e
+```
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── components/       # Reusable UI components
+│   │   ├── services/         # HTTP & WebSocket services
+│   │   ├── models/           # TypeScript interfaces / DTOs
+│   │   ├── pages/            # Route-level page components
+│   │   └── app.routes.ts     # Angular routing
+│   ├── assets/
+│   └── styles.css            # Global Tailwind styles
+├── package.json
+└── angular.json
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+---
 
-## Additional Resources
+## Backend API
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The frontend communicates with the Spring Boot backend at `http://localhost:8080`.
+
+| Feature | Endpoint |
+|---|---|
+| Vehicles | `/api/vehicles` |
+| Routes | `/api/routes` |
+| Stops | `/api/stops` |
+| Trips | `/api/trips` |
+| Location Updates | `/api/location-updates` |
+| WebSocket | `ws://localhost:8080/ws` |
+
+See the [backend README](../backend/README.md) for full API documentation.
