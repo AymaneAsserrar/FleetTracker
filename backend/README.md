@@ -1,6 +1,6 @@
 # FleetTracker — Backend
 
-Spring Boot REST API backend for the FleetTracker fleet management system. Provides full CRUD endpoints for vehicles, routes, stops, trips, and real-time location tracking, with a built-in Swagger UI for interactive API testing.
+Spring Boot REST API backend for the FleetTracker fleet management system. Provides full CRUD endpoints for vehicles, drivers, routes, stops, trips, alerts, and real-time location tracking, with JWT-based authentication and a built-in Swagger UI.
 
 ---
 
@@ -11,8 +11,9 @@ Spring Boot REST API backend for the FleetTracker fleet management system. Provi
 | Java | 21 |
 | Spring Boot | 3.5.11 |
 | Build Tool | Maven |
-| Database | PostgreSQL |
+| Database | PostgreSQL + PostGIS |
 | ORM | Hibernate + Hibernate Spatial |
+| Security | Spring Security + JWT (jjwt 0.12.6) |
 | API Docs | SpringDoc OpenAPI (Swagger UI) |
 
 ---
@@ -23,8 +24,10 @@ Spring Boot REST API backend for the FleetTracker fleet management system. Provi
 |---|---|
 | spring-boot-starter-web | REST API (controllers, HTTP) |
 | spring-boot-starter-data-jpa | ORM & database persistence via Hibernate |
+| spring-boot-starter-security | Spring Security filter chain & CORS |
 | spring-boot-starter-websocket | Real-time WebSocket communication |
 | hibernate-spatial | PostGIS geometry column support |
+| jjwt 0.12.6 | JWT token generation and validation |
 | postgresql | PostgreSQL JDBC driver (runtime) |
 | lombok | Reduces boilerplate (getters, setters, constructors) |
 | spring-dotenv | Loads `.env` file as Spring properties |
@@ -42,18 +45,26 @@ backend/
 │   │   ├── java/com/example/backend/
 │   │   │   ├── BackendApplication.java
 │   │   │   ├── config/
-│   │   │   │   └── OpenApiConfig.java          # Swagger / OpenAPI metadata
+│   │   │   │   ├── OpenApiConfig.java          # Swagger / OpenAPI metadata
+│   │   │   │   ├── SecurityConfig.java         # Spring Security, JWT filter, CORS
+│   │   │   │   └── CorsConfig.java             # CORS for localhost:4200
 │   │   │   ├── controller/
+│   │   │   │   ├── AuthController.java         # /api/auth — login, register, current user
 │   │   │   │   ├── VehicleController.java
+│   │   │   │   ├── DriverController.java
 │   │   │   │   ├── RouteController.java
 │   │   │   │   ├── StopController.java
 │   │   │   │   ├── TripController.java
+│   │   │   │   ├── AlertController.java        # /api/alerts — LATE trip alerts
 │   │   │   │   └── LocationUpdateController.java
 │   │   │   ├── dto/
+│   │   │   │   ├── AuthDTO.java
 │   │   │   │   ├── VehicleDTO.java
+│   │   │   │   ├── DriverDTO.java
 │   │   │   │   ├── RouteDTO.java
 │   │   │   │   ├── StopDTO.java
 │   │   │   │   ├── TripDTO.java
+│   │   │   │   ├── AlertDTO.java
 │   │   │   │   └── LocationUpdateDTO.java
 │   │   │   ├── exception/
 │   │   │   │   └── GlobalExceptionHandler.java # 404 / 400 / 500 responses
@@ -61,24 +72,36 @@ backend/
 │   │   │   │   ├── enums/
 │   │   │   │   │   ├── VehicleType.java        # BUS, TRUCK, VAN, CAR, MOTORCYCLE
 │   │   │   │   │   ├── VehicleStatus.java      # ACTIVE, INACTIVE, MAINTENANCE, IN_TRANSIT
-│   │   │   │   │   └── TripStatus.java         # SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+│   │   │   │   │   ├── TripStatus.java         # SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+│   │   │   │   │   └── AlertType.java          # LATE
 │   │   │   │   ├── Vehicle.java
+│   │   │   │   ├── Driver.java
 │   │   │   │   ├── Route.java
 │   │   │   │   ├── Stop.java
 │   │   │   │   ├── Trip.java
+│   │   │   │   ├── Alert.java
 │   │   │   │   └── LocationUpdate.java
 │   │   │   ├── repository/
 │   │   │   │   ├── VehicleRepository.java
+│   │   │   │   ├── DriverRepository.java
 │   │   │   │   ├── RouteRepository.java
 │   │   │   │   ├── StopRepository.java
 │   │   │   │   ├── TripRepository.java
+│   │   │   │   ├── AlertRepository.java
 │   │   │   │   └── LocationUpdateRepository.java
+│   │   │   ├── security/
+│   │   │   │   ├── JwtUtil.java               # JWT generation & parsing (driverId, isManager claims)
+│   │   │   │   └── JwtAuthFilter.java         # Extracts & validates JWT from Authorization header
 │   │   │   └── service/
+│   │   │       ├── AuthService.java           # Registration, login, token generation
 │   │   │       ├── VehicleService.java
+│   │   │       ├── DriverService.java
 │   │   │       ├── RouteService.java
 │   │   │       ├── StopService.java
 │   │   │       ├── TripService.java
-│   │   │       └── LocationUpdateService.java
+│   │   │       ├── AlertService.java          # Alert creation and resolution
+│   │   │       ├── LocationUpdateService.java
+│   │   │       └── TripScheduler.java         # @Scheduled — auto-complete & LATE alerts
 │   │   └── resources/
 │   │       └── application.properties
 │   └── test/
@@ -94,12 +117,13 @@ backend/
 
 ## Configuration
 
-Database credentials are loaded from a `.env` file in the `backend/` directory:
+Credentials and secrets are loaded from a `.env` file in the `backend/` directory:
 
 ```env
 DB_URL=jdbc:postgresql://localhost:5432/db_fleet
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
+JWT_SECRET=your_jwt_secret_key
 ```
 
 Core settings in `src/main/resources/application.properties`:
@@ -117,7 +141,7 @@ springdoc.api-docs.path=/api-docs
 
 - Java 21+
 - Maven 3.x (or use the included `mvnw` wrapper)
-- PostgreSQL running locally with a `fleet_db` database
+- PostgreSQL running locally with a `db_fleet` database and PostGIS extension enabled
 
 ---
 
@@ -153,6 +177,14 @@ http://localhost:8080/api-docs
 
 ## API Endpoints
 
+### Authentication — `/api/auth`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | Register a new driver or manager |
+| POST | `/api/auth/login` | Public | Login and receive a JWT token |
+| GET | `/api/auth/me` | JWT | Get current authenticated user info |
+
 ### Vehicles — `/api/vehicles`
 
 | Method | Path | Description |
@@ -163,6 +195,16 @@ http://localhost:8080/api-docs
 | PUT | `/api/vehicles/{id}` | Update vehicle details |
 | PUT | `/api/vehicles/{id}/location` | Update vehicle's current GPS position |
 | DELETE | `/api/vehicles/{id}` | Delete a vehicle |
+
+### Drivers — `/api/drivers`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/drivers` | List all drivers |
+| GET | `/api/drivers/{id}` | Get driver by ID |
+| POST | `/api/drivers` | Create a new driver |
+| PUT | `/api/drivers/{id}` | Update driver details |
+| DELETE | `/api/drivers/{id}` | Delete a driver |
 
 ### Routes — `/api/routes`
 
@@ -192,10 +234,20 @@ http://localhost:8080/api-docs
 | GET | `/api/trips` | List all trips (optional `?status=` filter) |
 | GET | `/api/trips/{id}` | Get trip by ID |
 | GET | `/api/trips/vehicle/{vehicleId}` | Get all trips for a vehicle |
+| GET | `/api/trips/driver/{driverId}` | Get all trips assigned to a driver |
 | POST | `/api/trips` | Create a new trip |
 | PUT | `/api/trips/{id}` | Update trip details |
-| PATCH | `/api/trips/{id}/status` | Update trip status only |
+| PATCH | `/api/trips/{id}/status?status=` | Update trip status only |
 | DELETE | `/api/trips/{id}` | Delete a trip |
+
+### Alerts — `/api/alerts`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/alerts` | List all alerts (optional `?resolved=` filter) |
+| GET | `/api/alerts/{id}` | Get alert by ID |
+| PATCH | `/api/alerts/{id}/resolve` | Mark an alert as resolved |
+| DELETE | `/api/alerts/{id}` | Delete an alert |
 
 ### Location Updates — `/api/location-updates`
 
@@ -204,6 +256,23 @@ http://localhost:8080/api-docs
 | GET | `/api/location-updates/vehicle/{vehicleId}` | Full location history (newest first) |
 | GET | `/api/location-updates/vehicle/{vehicleId}/latest` | Latest position only |
 | POST | `/api/location-updates` | Record a new location update |
+
+---
+
+## Scheduler
+
+`TripScheduler` runs every **60 seconds** and checks all `IN_PROGRESS` trips whose `end_time` has passed:
+
+- If the assigned vehicle is within **20 meters** of the trip's destination (Haversine formula): trip status → `COMPLETED`, vehicle status → `ACTIVE`
+- Otherwise: a `LATE` alert is created for that trip (if one doesn't exist already)
+
+---
+
+## Security
+
+- All endpoints require a valid JWT in the `Authorization: Bearer <token>` header, except `/api/auth/login` and `/api/auth/register`
+- JWT claims include `driverId` and `isManager` — manager-only operations are enforced in the service layer
+- Passwords are hashed with BCrypt before storage
 
 ---
 

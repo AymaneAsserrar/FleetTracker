@@ -13,7 +13,7 @@ A full-stack **fleet management system** for tracking vehicles, trips, and route
 | Database | PostgreSQL + PostGIS |
 | Map | Leaflet.js |
 | Styling | Tailwind CSS 4 |
-| Real-time | Spring WebSocket (STOMP) |
+| Auth | Spring Security + JWT (jjwt 0.12.6) |
 | API Docs | SpringDoc OpenAPI (Swagger UI) |
 | Build (BE) | Maven |
 | Build (FE) | Angular CLI 21 |
@@ -22,13 +22,37 @@ A full-stack **fleet management system** for tracking vehicles, trips, and route
 
 ## Features
 
-- **Dashboard** — stats cards (total / active / in-transit / maintenance), interactive fleet map with live vehicle markers, active trips panel with click-to-locate, recent trips table
-- **Fleet Map** — Leaflet map with color-coded markers per vehicle status; clicking an active trip flies the map to that vehicle and opens its popup
-- **Vehicle Management** — full CRUD, status filtering (All / Active / In Transit / Maintenance / Inactive), optional GPS coordinates
-- **Trip Management** — create/edit trips with vehicle & route selection, one-click status transitions (Start → In Progress → Complete / Cancel)
-- **Route Management** — create/edit routes with active/inactive toggle and description
-- **Geospatial Storage** — vehicle positions stored as PostGIS geometry points, exposed as lat/lng via REST
-- **API Documentation** — Swagger UI at `http://localhost:8080/swagger-ui.html`
+### Fleet Management
+- **Dashboard** — stats cards (total / active / in-transit / maintenance), interactive fleet map with live vehicle markers, active trips panel with click-to-visualize (start marker, end marker, route polyline)
+- **Vehicle Management** — full CRUD, status filtering (All / Active / In Transit / Maintenance / Inactive), optional GPS coordinates stored as PostGIS geometry points
+- **Driver Management** — full CRUD, manager role distinction, contact phone, licence number
+- **Route Management** — create/edit routes with active/inactive toggle, description, and ordered stops
+- **Trip Management** — create/edit trips with vehicle, route, and driver assignment; one-click status transitions (SCHEDULED → IN_PROGRESS → COMPLETED / CANCELLED); filter by status
+
+### Real-time Tracking
+- Vehicle GPS location stored as PostGIS geometry (lat/lng via REST)
+- Full location history and latest-position endpoints per vehicle
+
+### Automation & Alerts
+- **TripScheduler** — runs every 60 seconds; if a trip's end time has passed:
+  - Vehicle within **20 m** of destination → trip is **auto-completed**
+  - Vehicle still far → a **LATE alert** is created
+- **Alerts page** — managers view all LATE alerts, toggle resolved/unresolved, and resolve them manually
+- Drivers receive a dedicated **alerts notification** page when their trip is overdue
+
+### Authentication & Authorization
+- JWT-based authentication (no sessions); tokens carry `driverId` and `isManager` claims
+- Secure password hashing with BCrypt
+- **Login / Register** pages for both drivers and managers
+- Role-based route guards: manager-only pages (Dashboard, Vehicles, Trips, Routes, Drivers, Alerts) vs driver pages (My Trips)
+- HTTP interceptor automatically attaches the JWT to every request
+
+### Driver Portal
+- **My Trips** page — driver-specific view showing active trip, upcoming trips, completed trips, and computed stats
+
+### API Documentation
+- Swagger UI at `http://localhost:8080/swagger-ui.html`
+- Raw OpenAPI spec at `http://localhost:8080/api-docs`
 
 ---
 
@@ -37,26 +61,36 @@ A full-stack **fleet management system** for tracking vehicles, trips, and route
 ```
 FleetTracker/
 ├── database/
-│   ├── schema.sql          # Table definitions (vehicles, routes, stops, trips, location_updates)
-│   └── sample-data.sql     # Seed data for local development
+│   ├── schema.sql              # Table definitions (vehicles, drivers, routes, stops, trips, alerts, location_updates)
+│   └── sample-data.sql         # Seed data for local development
 ├── backend/
-│   ├── .env.example        # Environment variable template
+│   ├── .env.example            # Environment variable template
 │   └── src/main/java/com/example/backend/
-│       ├── config/          # CORS, OpenAPI
-│       ├── controller/      # VehicleController, TripController, RouteController ...
-│       ├── service/         # Business logic
-│       ├── repository/      # Spring Data JPA
-│       ├── model/           # JPA entities + enums
-│       └── dto/             # Request / Response DTOs
+│       ├── config/             # CORS, OpenAPI, Spring Security
+│       ├── controller/         # VehicleController, TripController, RouteController, DriverController,
+│       │                       #   AuthController, AlertController, LocationUpdateController, StopController
+│       ├── service/            # Business logic (includes TripScheduler for auto-complete & alerts)
+│       ├── repository/         # Spring Data JPA repositories
+│       ├── model/              # JPA entities + enums (VehicleStatus, VehicleType, TripStatus, AlertType)
+│       ├── dto/                # Request / Response DTOs
+│       ├── security/           # JwtUtil, JwtAuthFilter
+│       └── exception/          # GlobalExceptionHandler
 ├── frontend/
 │   └── src/app/
-│       ├── dashboard/       # Dashboard page
-│       ├── vehicles/        # Vehicles page
-│       ├── trips/           # Trips page
-│       ├── routes/          # Routes page
-│       ├── layout/          # Sidebar + shell layout
-│       ├── models/          # TypeScript interfaces & enums
-│       └── services/        # HTTP services (vehicle, trip, route, location)
+│       ├── dashboard/          # Dashboard page (map + stats + active trips)
+│       ├── vehicles/           # Vehicles CRUD page
+│       ├── trips/              # Trips management page
+│       ├── routes/             # Routes management page
+│       ├── drivers/            # Drivers management page
+│       ├── alerts/             # Alerts page (manager view)
+│       ├── my-trips/           # My Trips page (driver view)
+│       ├── login/              # Login page
+│       ├── register/           # Register page
+│       ├── layout/             # Sidebar + shell layout
+│       ├── guards/             # authGuard, managerGuard
+│       ├── interceptors/       # JWT auth interceptor
+│       ├── models/             # TypeScript interfaces & enums
+│       └── services/           # HTTP services (vehicle, trip, route, driver, alert, auth, location)
 └── README.md
 ```
 
@@ -82,6 +116,7 @@ cp backend/.env.example backend/.env
 DB_URL=jdbc:postgresql://localhost:5432/db_fleet
 DB_USERNAME=your_db_username
 DB_PASSWORD=your_db_password
+JWT_SECRET=your_jwt_secret_key
 ```
 
 Then create the database and run the schema:
@@ -91,7 +126,7 @@ psql -U postgres -c "CREATE DATABASE db_fleet;"
 psql -U postgres -d db_fleet -f database/schema.sql
 ```
 
-Optionally seed sample data (5 vehicles, 3 routes, 5 trips, location history):
+Optionally seed sample data:
 
 ```bash
 psql -U postgres -d db_fleet -f database/sample-data.sql
@@ -127,8 +162,10 @@ App runs at `http://localhost:4200`.
 |---------|---------|
 | spring-boot-starter-web | REST controllers |
 | spring-boot-starter-data-jpa | ORM & persistence |
-| spring-boot-starter-websocket | Real-time STOMP messaging |
+| spring-boot-starter-security | Spring Security filter chain |
+| spring-boot-starter-websocket | WebSocket support (STOMP) |
 | hibernate-spatial | PostGIS geometry column support |
+| jjwt 0.12.6 | JWT generation and validation |
 | postgresql | JDBC driver |
 | lombok | Boilerplate reduction |
 | springdoc-openapi | Swagger UI & OpenAPI 3 spec |
@@ -141,7 +178,6 @@ App runs at `http://localhost:4200`.
 | @angular/router | Lazy-loaded client-side routing |
 | @angular/forms | Template-driven forms |
 | leaflet | Interactive maps |
-| @stomp/stompjs + sockjs-client | WebSocket real-time layer |
 | rxjs | Reactive HTTP with forkJoin |
 | tailwindcss 4 | Utility-first styling |
 
