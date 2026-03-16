@@ -4,15 +4,18 @@ import { forkJoin } from 'rxjs';
 import { TripService } from '../services/trip.service';
 import { VehicleService } from '../services/vehicle.service';
 import { RouteService } from '../services/route.service';
+import { DriverService } from '../services/driver.service';
 import { Trip, TripStatus } from '../models/trip.model';
 import { Vehicle } from '../models/vehicle.model';
 import { Route } from '../models/route.model';
+import { Driver } from '../models/driver.model';
 
 type FilterValue = 'ALL' | TripStatus;
 
 interface TripForm {
   vehicleId: number | null;
   routeId: number | null;
+  driverId: number | null;
   startTime: string;
   endTime: string;
   status: TripStatus;
@@ -28,10 +31,12 @@ export class TripsComponent implements OnInit {
   private readonly tripSvc = inject(TripService);
   private readonly vehicleSvc = inject(VehicleService);
   private readonly routeSvc = inject(RouteService);
+  private readonly driverSvc = inject(DriverService);
 
   trips = signal<Trip[]>([]);
   vehicles = signal<Vehicle[]>([]);
   routes = signal<Route[]>([]);
+  drivers = signal<Driver[]>([]);
   loading = signal(true);
   saving = signal(false);
   filter = signal<FilterValue>('ALL');
@@ -61,7 +66,7 @@ export class TripsComponent implements OnInit {
   });
 
   private blank(): TripForm {
-    return { vehicleId: null, routeId: null, startTime: '', endTime: '', status: TripStatus.SCHEDULED };
+    return { vehicleId: null, routeId: null, driverId: null, startTime: '', endTime: '', status: TripStatus.SCHEDULED };
   }
 
   ngOnInit() { this.load(); }
@@ -72,11 +77,13 @@ export class TripsComponent implements OnInit {
       trips: this.tripSvc.getAll(),
       vehicles: this.vehicleSvc.getAll(),
       routes: this.routeSvc.getAll(),
+      drivers: this.driverSvc.getAll(),
     }).subscribe({
-      next: ({ trips, vehicles, routes }) => {
+      next: ({ trips, vehicles, routes, drivers }) => {
         this.trips.set(trips);
         this.vehicles.set(vehicles);
         this.routes.set(routes);
+        this.drivers.set(drivers);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -94,6 +101,7 @@ export class TripsComponent implements OnInit {
     this.formData = {
       vehicleId: t.vehicleId,
       routeId: t.routeId,
+      driverId: t.driverId ?? null,
       startTime: this.toDatetimeLocal(t.startTime),
       endTime: this.toDatetimeLocal(t.endTime),
       status: t.status,
@@ -116,6 +124,7 @@ export class TripsComponent implements OnInit {
     const payload = {
       vehicleId: Number(this.formData.vehicleId),
       routeId: Number(this.formData.routeId),
+      driverId: this.formData.driverId ? Number(this.formData.driverId) : undefined,
       startTime: this.fromDatetimeLocal(this.formData.startTime),
       endTime: this.formData.endTime ? this.fromDatetimeLocal(this.formData.endTime) : undefined,
       status: this.formData.status,

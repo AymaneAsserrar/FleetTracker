@@ -11,6 +11,8 @@ export interface Trip {
   vehicleName?: string;
   routeId: number;
   routeName?: string;
+  driverId?: number;
+  driverName?: string;
   startTime: string;
   endTime?: string;
   status: TripStatus;

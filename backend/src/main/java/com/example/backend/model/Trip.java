@@ -28,6 +28,10 @@ public class Trip {
     @JoinColumn(name = "route_id", nullable = false)
     private Route route;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "driver_id")
+    private Driver driver;
+
     @Column(name = "start_time")
     private LocalDateTime startTime;
 

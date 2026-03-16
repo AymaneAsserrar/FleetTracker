@@ -11,6 +11,7 @@ public class TripDTO {
     public static class Request {
         private Long vehicleId;
         private Long routeId;
+        private Long driverId;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private TripStatus status;
@@ -23,6 +24,8 @@ public class TripDTO {
         private String vehicleName;
         private Long routeId;
         private String routeName;
+        private Long driverId;
+        private String driverName;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private TripStatus status;

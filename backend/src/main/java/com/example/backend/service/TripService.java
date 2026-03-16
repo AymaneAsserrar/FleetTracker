@@ -1,10 +1,12 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.TripDTO;
+import com.example.backend.model.Driver;
 import com.example.backend.model.Route;
 import com.example.backend.model.Trip;
 import com.example.backend.model.Vehicle;
 import com.example.backend.model.enums.TripStatus;
+import com.example.backend.repository.DriverRepository;
 import com.example.backend.repository.RouteRepository;
 import com.example.backend.repository.TripRepository;
 import com.example.backend.repository.VehicleRepository;
@@ -23,6 +25,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final VehicleRepository vehicleRepository;
     private final RouteRepository routeRepository;
+    private final DriverRepository driverRepository;
 
     public List<TripDTO.Response> findAll() {
         return tripRepository.findAll().stream().map(this::toResponse).toList();
@@ -50,6 +53,10 @@ public class TripService {
         Trip trip = new Trip();
         trip.setVehicle(vehicle);
         trip.setRoute(route);
+        if (request.getDriverId() != null) {
+            trip.setDriver(driverRepository.findById(request.getDriverId())
+                    .orElseThrow(() -> new EntityNotFoundException("Driver not found with id: " + request.getDriverId())));
+        }
         trip.setStartTime(request.getStartTime());
         trip.setEndTime(request.getEndTime());
         if (request.getStatus() != null) trip.setStatus(request.getStatus());
@@ -77,6 +84,12 @@ public class TripService {
                     .orElseThrow(() -> new EntityNotFoundException("Route not found with id: " + request.getRouteId()));
             trip.setRoute(route);
         }
+        if (request.getDriverId() != null) {
+            trip.setDriver(driverRepository.findById(request.getDriverId())
+                    .orElseThrow(() -> new EntityNotFoundException("Driver not found with id: " + request.getDriverId())));
+        } else {
+            trip.setDriver(null);
+        }
         if (request.getStartTime() != null) trip.setStartTime(request.getStartTime());
         if (request.getEndTime() != null) trip.setEndTime(request.getEndTime());
         if (request.getStatus() != null) trip.setStatus(request.getStatus());
@@ -103,6 +116,10 @@ public class TripService {
         r.setVehicleName(t.getVehicle().getName());
         r.setRouteId(t.getRoute().getId());
         r.setRouteName(t.getRoute().getName());
+        if (t.getDriver() != null) {
+            r.setDriverId(t.getDriver().getId());
+            r.setDriverName(t.getDriver().getName());
+        }
         r.setStartTime(t.getStartTime());
         r.setEndTime(t.getEndTime());
         r.setStatus(t.getStatus());

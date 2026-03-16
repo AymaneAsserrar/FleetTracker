@@ -15,8 +15,10 @@ import * as L from 'leaflet';
 
 import { VehicleService } from '../services/vehicle.service';
 import { TripService } from '../services/trip.service';
+import { DriverService } from '../services/driver.service';
 import { Vehicle, VehicleStatus } from '../models/vehicle.model';
 import { Trip, TripStatus } from '../models/trip.model';
+import { Driver } from '../models/driver.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,10 +31,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly vehicleService = inject(VehicleService);
   private readonly tripService = inject(TripService);
+  private readonly driverService = inject(DriverService);
   private readonly destroy$ = new Subject<void>();
 
   vehicles = signal<Vehicle[]>([]);
   trips = signal<Trip[]>([]);
+  drivers = signal<Driver[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
 
@@ -54,8 +58,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   maintenanceVehicles = computed(() =>
     this.vehicles().filter(v => v.status === VehicleStatus.MAINTENANCE).length
   );
+  totalDrivers = computed(() => this.drivers().length);
+  totalManagers = computed(() => this.drivers().filter(d => d.isManager).length);
   activeTrips = computed(() =>
     this.trips().filter(t => t.status === TripStatus.IN_PROGRESS)
+  );
+  scheduledTrips = computed(() =>
+    this.trips().filter(t => t.status === TripStatus.SCHEDULED).length
   );
   recentTrips = computed(() => [...this.trips()].slice(0, 10));
 
@@ -99,12 +108,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     forkJoin({
       vehicles: this.vehicleService.getAll(),
       trips: this.tripService.getAll(),
+      drivers: this.driverService.getAll(),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ vehicles, trips }) => {
+        next: ({ vehicles, trips, drivers }) => {
           this.vehicles.set(vehicles);
           this.trips.set(trips);
+          this.drivers.set(drivers);
           this.loading.set(false);
           this.dataReady = true;
           if (this.mapReady) {
@@ -189,16 +200,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       [TripStatus.SCHEDULED]:   'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-700',
       [TripStatus.COMPLETED]:   'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700',
       [TripStatus.CANCELLED]:   'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700',
-    };
-    return map[status] ?? 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600';
-  }
-
-  vehicleBadgeClass(status: VehicleStatus): string {
-    const map: Record<VehicleStatus, string> = {
-      [VehicleStatus.ACTIVE]:      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700',
-      [VehicleStatus.IN_TRANSIT]:  'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700',
-      [VehicleStatus.MAINTENANCE]: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700',
-      [VehicleStatus.INACTIVE]:    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600',
     };
     return map[status] ?? 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600';
   }
