@@ -23,6 +23,10 @@ export const routes: Routes = [
         path: 'routes',
         loadComponent: () => import('./routes/routes').then(m => m.RoutesComponent),
       },
+      {
+        path: 'drivers',
+        loadComponent: () => import('./drivers/drivers').then(m => m.DriversComponent),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
