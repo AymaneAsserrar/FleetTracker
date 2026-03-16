@@ -23,6 +23,10 @@ export class TripService {
     return this.http.get<Trip[]>(`${BASE_URL}/vehicle/${vehicleId}`);
   }
 
+  getByDriver(driverId: number): Observable<Trip[]> {
+    return this.http.get<Trip[]>(`${BASE_URL}/driver/${driverId}`);
+  }
+
   create(trip: Partial<Trip>): Observable<Trip> {
     return this.http.post<Trip>(BASE_URL, trip);
   }

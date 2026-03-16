@@ -1,0 +1,132 @@
+<div class="flex flex-col h-full overflow-hidden">
+
+  <!-- Header -->
+  <header class="shrink-0 bg-white border-b border-gray-200 px-6 h-16 flex items-center justify-between">
+    <div>
+      <h1 class="text-base font-semibold text-gray-900">My Trips</h1>
+      <p class="text-xs text-gray-500 mt-0.5">Welcome back, {{ auth.currentUser()?.name }}</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-gray-500">{{ totalTrips() }} total trips</span>
+    </div>
+  </header>
+
+  <div class="flex-1 overflow-y-auto bg-gray-50">
+    <div class="max-w-4xl mx-auto p-6 space-y-6">
+
+      @if (loading()) {
+        <div class="flex items-center justify-center py-20">
+          <svg class="w-6 h-6 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </div>
+      } @else {
+
+        <!-- Stats row -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+            <p class="text-2xl font-bold text-gray-900">{{ totalTrips() }}</p>
+            <p class="text-xs text-gray-500 mt-1">Total Trips</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+            <p class="text-2xl font-bold text-blue-600">{{ upcoming().length }}</p>
+            <p class="text-xs text-gray-500 mt-1">Upcoming</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+            <p class="text-2xl font-bold text-green-600">{{ doneCount() }}</p>
+            <p class="text-xs text-gray-500 mt-1">Completed</p>
+          </div>
+        </div>
+
+        <!-- Active trip banner -->
+        @if (activeTrip(); as trip) {
+          <div class="bg-blue-600 rounded-xl p-5 text-white shadow-lg">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+              <span class="text-xs font-semibold uppercase tracking-wide opacity-80">Active Trip</span>
+            </div>
+            <h2 class="text-lg font-bold">{{ trip.routeName }}</h2>
+            <p class="text-blue-100 text-sm mt-1">Vehicle: {{ trip.vehicleName }}</p>
+            <div class="flex items-center gap-4 mt-3 text-sm text-blue-100">
+              <span>Started: {{ formatDate(trip.startTime) }}</span>
+              @if (trip.endTime) {
+                <span>Due: {{ formatDate(trip.endTime) }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Upcoming trips -->
+        @if (upcoming().length > 0) {
+          <section>
+            <h2 class="text-sm font-semibold text-gray-700 mb-3">Upcoming Trips</h2>
+            <div class="space-y-3">
+              @for (trip of upcoming(); track trip.id) {
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <p class="font-semibold text-gray-900 text-sm">{{ trip.routeName }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">{{ trip.vehicleName }}</p>
+                    </div>
+                    <span [class]="statusClass(trip.status)">{{ statusLabel(trip.status) }}</span>
+                  </div>
+                  <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                    <span>Start: {{ formatDate(trip.startTime) }}</span>
+                    @if (trip.endTime) {
+                      <span>End: {{ formatDate(trip.endTime) }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Trip history -->
+        @if (trips().length === 0) {
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
+            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-gray-500">No trips assigned yet</p>
+            <p class="text-xs text-gray-400 mt-1">Your manager will assign trips to you shortly.</p>
+          </div>
+        } @else if (completed().length > 0) {
+          <section>
+            <h2 class="text-sm font-semibold text-gray-700 mb-3">Trip History</h2>
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="bg-gray-50/70 border-b border-gray-100">
+                    <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Route</th>
+                    <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Vehicle</th>
+                    <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Start</th>
+                    <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">End</th>
+                    <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                  @for (trip of completed(); track trip.id) {
+                    <tr class="hover:bg-gray-50/70 transition-colors">
+                      <td class="px-5 py-3.5 font-medium text-gray-800">{{ trip.routeName }}</td>
+                      <td class="px-5 py-3.5 text-gray-600">{{ trip.vehicleName }}</td>
+                      <td class="px-5 py-3.5 text-gray-500 text-xs">{{ formatDate(trip.startTime) }}</td>
+                      <td class="px-5 py-3.5 text-gray-500 text-xs">{{ trip.endTime ? formatDate(trip.endTime) : '—' }}</td>
+                      <td class="px-5 py-3.5"><span [class]="statusClass(trip.status)">{{ statusLabel(trip.status) }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        }
+
+      }
+    </div>
+  </div>
+
+</div>

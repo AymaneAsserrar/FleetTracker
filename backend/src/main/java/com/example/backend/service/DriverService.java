@@ -5,6 +5,7 @@ import com.example.backend.model.Driver;
 import com.example.backend.repository.DriverRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public class DriverService {
 
     private final DriverRepository driverRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<DriverDTO.Response> findAll() {
         return driverRepository.findAll().stream().map(this::toResponse).toList();
@@ -63,6 +65,10 @@ public class DriverService {
             driver.setLicenceNumber(request.getLicenceNumber());
         if (request.getContactPhone() != null)
             driver.setContactPhone(request.getContactPhone());
+        if (request.getUsername() != null)
+            driver.setUsername(request.getUsername());
+        if (request.getPassword() != null && !request.getPassword().isBlank())
+            driver.setPasswordHash(passwordEncoder.encode(request.getPassword()));
     }
 
     public DriverDTO.Response toResponse(Driver d) {
@@ -73,6 +79,7 @@ public class DriverService {
         r.setIsManager(d.getIsManager());
         r.setLicenceNumber(d.getLicenceNumber());
         r.setContactPhone(d.getContactPhone());
+        r.setUsername(d.getUsername());
         return r;
     }
 }

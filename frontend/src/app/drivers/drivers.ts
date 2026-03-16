@@ -11,6 +11,8 @@ interface DriverForm {
   licenceNumber: string;
   isManager: boolean;
   contactPhone: string;
+  username: string;
+  password: string;
 }
 
 @Component({
@@ -50,7 +52,7 @@ export class DriversComponent implements OnInit {
   });
 
   private blank(): DriverForm {
-    return { name: '', age: null, licenceNumber: '', isManager: false, contactPhone: '' };
+    return { name: '', age: null, licenceNumber: '', isManager: false, contactPhone: '', username: '', password: '' };
   }
 
   ngOnInit() { this.load(); }
@@ -77,6 +79,8 @@ export class DriversComponent implements OnInit {
       licenceNumber: d.licenceNumber,
       isManager: d.isManager,
       contactPhone: d.contactPhone,
+      username: d.username,
+      password: '', // leave blank — only set if manager wants to change it
     };
     this.showModal.set(true);
   }
@@ -87,7 +91,12 @@ export class DriversComponent implements OnInit {
   }
 
   isValid(): boolean {
-    return !!(this.formData.name?.trim() && this.formData.licenceNumber?.trim() && this.formData.contactPhone?.trim() && this.formData.age !== null && this.formData.age > 0);
+    const base = !!(this.formData.name?.trim() && this.formData.licenceNumber?.trim()
+      && this.formData.contactPhone?.trim() && this.formData.username?.trim()
+      && this.formData.age !== null && this.formData.age > 0);
+    // When creating, password is required; when editing it's optional (leave blank to keep current)
+    const pwOk = this.editingId() ? true : !!this.formData.password?.trim();
+    return base && pwOk;
   }
 
   save() {

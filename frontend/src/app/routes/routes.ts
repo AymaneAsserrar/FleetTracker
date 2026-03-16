@@ -107,12 +107,19 @@ export class RoutesComponent implements OnInit {
     });
   }
 
-  confirmDelete(id: number) { this.confirmDeleteId.set(id); }
-  cancelDelete() { this.confirmDeleteId.set(null); }
+  deleteError = signal('');
+
+  confirmDelete(id: number) { this.confirmDeleteId.set(id); this.deleteError.set(''); }
+  cancelDelete() { this.confirmDeleteId.set(null); this.deleteError.set(''); }
 
   deleteRoute(id: number) {
     this.svc.delete(id).subscribe({
-      next: () => { this.confirmDeleteId.set(null); this.load(); },
+      next: () => { this.confirmDeleteId.set(null); this.deleteError.set(''); this.load(); },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Could not delete route.';
+        this.deleteError.set(msg);
+        this.confirmDeleteId.set(null);
+      },
     });
   }
 

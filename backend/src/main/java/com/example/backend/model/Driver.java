@@ -31,4 +31,10 @@ public class Driver {
     @Column(nullable = false)
     private String contactPhone;
 
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String passwordHash;
+
 }

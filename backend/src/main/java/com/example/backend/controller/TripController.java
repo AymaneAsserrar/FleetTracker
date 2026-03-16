@@ -42,6 +42,12 @@ public class TripController {
         return ResponseEntity.ok(tripService.findByVehicle(vehicleId));
     }
 
+    @GetMapping("/driver/{driverId}")
+    @Operation(summary = "Get all trips assigned to a specific driver")
+    public ResponseEntity<List<TripDTO.Response>> getByDriver(@PathVariable Long driverId) {
+        return ResponseEntity.ok(tripService.findByDriver(driverId));
+    }
+
     @PostMapping
     @Operation(summary = "Create a new trip")
     public ResponseEntity<TripDTO.Response> create(@RequestBody TripDTO.Request request) {

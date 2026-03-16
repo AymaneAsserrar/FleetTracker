@@ -31,8 +31,15 @@ CREATE TABLE IF NOT EXISTS drivers (
     age            BIGINT       NOT NULL,
     is_manager     BOOLEAN      NOT NULL DEFAULT FALSE,
     licence_number VARCHAR(255) NOT NULL,
-    contact_phone  VARCHAR(50)  NOT NULL
+    contact_phone  VARCHAR(50)  NOT NULL,
+    username       VARCHAR(100) NOT NULL UNIQUE,
+    password_hash  VARCHAR(255) NOT NULL
 );
+
+-- Migration: if the table already exists, add the new columns:
+-- ALTER TABLE drivers ADD COLUMN IF NOT EXISTS username      VARCHAR(100) NOT NULL DEFAULT '';
+-- ALTER TABLE drivers ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255) NOT NULL DEFAULT '';
+-- ALTER TABLE drivers ADD CONSTRAINT drivers_username_unique UNIQUE (username);
 
 -- ── routes ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS routes (

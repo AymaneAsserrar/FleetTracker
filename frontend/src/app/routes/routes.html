@@ -21,6 +21,16 @@
   <div class="flex-1 overflow-y-auto bg-gray-50">
     <div class="max-w-7xl mx-auto p-6 space-y-5">
 
+      @if (deleteError()) {
+        <div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          {{ deleteError() }}
+        </div>
+      }
+
       <!-- Stats + Filter row -->
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div class="flex items-center gap-3">

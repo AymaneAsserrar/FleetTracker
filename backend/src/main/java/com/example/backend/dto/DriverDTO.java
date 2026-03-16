@@ -13,6 +13,9 @@ public class DriverDTO {
         private Boolean isManager;
         private String licenceNumber;
         private String contactPhone;
+        private String username;
+        /** Plain-text password — only set when creating or changing password */
+        private String password;
     }
 
     @Data
@@ -24,5 +27,6 @@ public class DriverDTO {
         private Boolean isManager;
         private String licenceNumber;
         private String contactPhone;
+        private String username;
     }
 }

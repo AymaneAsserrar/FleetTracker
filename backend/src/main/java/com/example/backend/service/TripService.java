@@ -35,6 +35,10 @@ public class TripService {
         return tripRepository.findByVehicleId(vehicleId).stream().map(this::toResponse).toList();
     }
 
+    public List<TripDTO.Response> findByDriver(Long driverId) {
+        return tripRepository.findByDriverId(driverId).stream().map(this::toResponse).toList();
+    }
+
     public List<TripDTO.Response> findByStatus(TripStatus status) {
         return tripRepository.findByStatus(status).stream().map(this::toResponse).toList();
     }

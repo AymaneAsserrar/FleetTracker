@@ -5,4 +5,5 @@ export interface Driver {
   isManager: boolean;
   licenceNumber: string;
   contactPhone: string;
+  username: string;
 }

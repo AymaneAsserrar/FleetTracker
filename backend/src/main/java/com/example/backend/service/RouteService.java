@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.dto.RouteDTO;
 import com.example.backend.model.Route;
 import com.example.backend.repository.RouteRepository;
+import com.example.backend.repository.TripRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.List;
 public class RouteService {
 
     private final RouteRepository routeRepository;
+    private final TripRepository tripRepository;
 
     public List<RouteDTO.Response> findAll() {
         return routeRepository.findAll().stream().map(this::toResponse).toList();
@@ -47,6 +49,12 @@ public class RouteService {
     public void delete(Long id) {
         if (!routeRepository.existsById(id)) {
             throw new EntityNotFoundException("Route not found with id: " + id);
+        }
+        long tripCount = tripRepository.findByRouteId(id).size();
+        if (tripCount > 0) {
+            throw new IllegalArgumentException(
+                "Cannot delete route: it is used by " + tripCount + " trip(s). Remove or reassign those trips first."
+            );
         }
         routeRepository.deleteById(id);
     }
