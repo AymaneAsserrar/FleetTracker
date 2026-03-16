@@ -12,6 +12,10 @@ public class TripDTO {
         private Long vehicleId;
         private Long routeId;
         private Long driverId;
+        private Double startLatitude;
+        private Double startLongitude;
+        private Double endLatitude;
+        private Double endLongitude;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private TripStatus status;
@@ -26,6 +30,10 @@ public class TripDTO {
         private String routeName;
         private Long driverId;
         private String driverName;
+        private Double startLatitude;
+        private Double startLongitude;
+        private Double endLatitude;
+        private Double endLongitude;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private TripStatus status;

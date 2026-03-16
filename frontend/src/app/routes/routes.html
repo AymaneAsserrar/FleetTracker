@@ -23,8 +23,6 @@
 
       <!-- Stats + Filter row -->
       <div class="flex items-center justify-between gap-4 flex-wrap">
-
-        <!-- Stat pills -->
         <div class="flex items-center gap-3">
           <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-2.5 flex items-center gap-3">
             <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
@@ -62,7 +60,6 @@
           </div>
         </div>
 
-        <!-- Active-only toggle -->
         <label class="flex items-center gap-2.5 cursor-pointer select-none">
           <div class="relative">
             <input type="checkbox" class="sr-only" [checked]="showActiveOnly()" (change)="showActiveOnly.set(!showActiveOnly())" />
@@ -88,11 +85,11 @@
                 <th class="text-right text-xs font-semibold text-gray-500 px-5 py-3">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
+            <tbody>
 
               @if (loading()) {
                 @for (i of [1,2,3,4]; track i) {
-                  <tr>
+                  <tr class="border-b border-gray-50">
                     <td class="px-5 py-3.5"><div class="h-3.5 bg-gray-200 rounded w-32 animate-pulse"></div></td>
                     <td class="px-5 py-3.5"><div class="h-3.5 bg-gray-100 rounded w-48 animate-pulse"></div></td>
                     <td class="px-5 py-3.5"><div class="h-5 bg-gray-100 rounded-full w-16 animate-pulse"></div></td>
@@ -117,31 +114,33 @@
                 </tr>
               } @else {
                 @for (r of filteredRoutes(); track r.id) {
-                  <tr class="hover:bg-gray-50/70 transition-colors">
+
+                  <!-- Route row -->
+                  <tr class="border-b border-gray-50 hover:bg-gray-50/70 transition-colors">
                     <td class="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap">{{ r.name }}</td>
-                    <td class="px-5 py-3.5 text-gray-500 max-w-xs truncate">
-                      {{ r.description || '—' }}
-                    </td>
+                    <td class="px-5 py-3.5 text-gray-500 max-w-xs truncate">{{ r.description || '—' }}</td>
                     <td class="px-5 py-3.5">
                       @if (r.active) {
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                          Active
-                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Active</span>
                       } @else {
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-                          Inactive
-                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactive</span>
                       }
                     </td>
                     <td class="px-5 py-3.5 text-gray-500 whitespace-nowrap">{{ formatTime(r.createdAt) }}</td>
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
                       @if (confirmDeleteId() === r.id) {
-                        <span class="text-xs text-gray-600 mr-2">Delete?</span>
+                        <span class="text-xs text-gray-600 mr-2">Delete route?</span>
                         <button (click)="deleteRoute(r.id)"
                           class="text-xs font-medium text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg mr-1.5 transition-colors cursor-pointer">Yes</button>
                         <button (click)="cancelDelete()"
                           class="text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">No</button>
                       } @else {
+                        <button (click)="toggleStops(r.id)"
+                          [class]="expandedRouteId() === r.id
+                            ? 'text-xs font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200 px-3 py-1.5 rounded-lg mr-1.5 transition-colors cursor-pointer'
+                            : 'text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg mr-1.5 transition-colors cursor-pointer'">
+                          Stops
+                        </button>
                         <button (click)="openEdit(r)"
                           class="text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg mr-1.5 transition-colors cursor-pointer">
                           Edit
@@ -153,6 +152,126 @@
                       }
                     </td>
                   </tr>
+
+                  <!-- Stops panel (inline expanded row) -->
+                  @if (expandedRouteId() === r.id) {
+                    <tr class="border-b border-indigo-100 bg-indigo-50/40">
+                      <td colspan="5" class="px-6 py-4">
+
+                        <div class="flex items-center justify-between mb-3">
+                          <h4 class="text-xs font-semibold text-indigo-700 uppercase tracking-wide flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Stops for {{ r.name }}
+                          </h4>
+                          @if (!showStopForm()) {
+                            <button (click)="openStopForm()"
+                              class="flex items-center gap-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                              </svg>
+                              Add Stop
+                            </button>
+                          }
+                        </div>
+
+                        <!-- Add stop form -->
+                        @if (showStopForm()) {
+                          <div class="bg-white border border-indigo-200 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="sm:col-span-2">
+                              <label class="block text-xs font-medium text-gray-600 mb-1">Stop Name <span class="text-red-500">*</span></label>
+                              <input
+                                [(ngModel)]="stopForm.name" name="stopName"
+                                placeholder="e.g. Central Station"
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-600 mb-1">Latitude <span class="text-red-500">*</span></label>
+                              <input
+                                [(ngModel)]="stopForm.latitude" name="stopLat"
+                                type="number" step="any" placeholder="e.g. 36.7525"
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-600 mb-1">Longitude <span class="text-red-500">*</span></label>
+                              <input
+                                [(ngModel)]="stopForm.longitude" name="stopLng"
+                                type="number" step="any" placeholder="e.g. 3.0420"
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-600 mb-1">Order <span class="text-red-500">*</span></label>
+                              <input
+                                [(ngModel)]="stopForm.sequenceOrder" name="stopSeq"
+                                type="number" min="1" placeholder="1"
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div class="sm:col-span-3 flex justify-end gap-2 items-end">
+                              <button (click)="cancelStopForm()" type="button"
+                                class="text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                                Cancel
+                              </button>
+                              <button (click)="saveStop()" type="button" [disabled]="!isStopValid() || savingStop()"
+                                class="text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                                {{ savingStop() ? 'Saving…' : 'Save Stop' }}
+                              </button>
+                            </div>
+                          </div>
+                        }
+
+                        <!-- Stops list -->
+                        @if (stopsLoading()) {
+                          <div class="text-xs text-gray-400 py-2">Loading stops…</div>
+                        } @else if (routeStops().length === 0) {
+                          <p class="text-xs text-gray-400 py-2">No stops yet. Click "Add Stop" to define the route path.</p>
+                        } @else {
+                          <div class="space-y-1.5">
+                            @for (stop of routeStops(); track stop.id) {
+                              <div class="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-3 py-2">
+                                <!-- Sequence badge -->
+                                <span class="w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0
+                                  {{ stop.sequenceOrder === 1 ? 'bg-green-100 text-green-700' :
+                                     stop.sequenceOrder === routeStops()[routeStops().length - 1].sequenceOrder ? 'bg-red-100 text-red-700' :
+                                     'bg-indigo-100 text-indigo-700' }}">
+                                  {{ stop.sequenceOrder }}
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                  <p class="text-sm font-medium text-gray-800 truncate">{{ stop.name }}</p>
+                                  <p class="text-xs text-gray-400">{{ stop.latitude }}, {{ stop.longitude }}</p>
+                                </div>
+                                @if (stop.sequenceOrder === 1) {
+                                  <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full shrink-0">Start</span>
+                                } @else if (stop.sequenceOrder === routeStops()[routeStops().length - 1].sequenceOrder) {
+                                  <span class="text-xs font-medium text-red-700 bg-red-50 px-2 py-0.5 rounded-full shrink-0">End</span>
+                                }
+                                @if (confirmDeleteStopId() === stop.id) {
+                                  <span class="text-xs text-gray-600">Delete?</span>
+                                  <button (click)="deleteStop(stop.id)"
+                                    class="text-xs font-medium text-white bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">Yes</button>
+                                  <button (click)="cancelDeleteStop()"
+                                    class="text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer">No</button>
+                                } @else {
+                                  <button (click)="confirmDeleteStop(stop.id)"
+                                    class="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0">
+                                    Remove
+                                  </button>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+
+                      </td>
+                    </tr>
+                  }
+
                 }
               }
 
@@ -166,7 +285,7 @@
 
 </div>
 
-<!-- Modal -->
+<!-- Route Modal -->
 @if (showModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeModal()"></div>
@@ -184,7 +303,6 @@
       </div>
 
       <form (ngSubmit)="save()" class="px-6 py-5 space-y-4">
-
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1.5">Route Name <span class="text-red-500">*</span></label>
           <input
@@ -193,7 +311,6 @@
             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
           />
         </div>
-
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1.5">Description <span class="text-gray-400">(optional)</span></label>
           <textarea
@@ -203,8 +320,7 @@
             class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
           ></textarea>
         </div>
-
-        <div class="flex items-center gap-3">
+        <div>
           <label class="flex items-center gap-2.5 cursor-pointer select-none">
             <div class="relative">
               <input type="checkbox" class="sr-only" [(ngModel)]="formData.active" name="active" />
@@ -216,7 +332,6 @@
             <span class="text-sm text-gray-700">Active route</span>
           </label>
         </div>
-
         <div class="flex gap-3 pt-2">
           <button type="button" (click)="closeModal()"
             class="flex-1 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 py-2.5 rounded-lg transition-colors cursor-pointer">
@@ -227,7 +342,6 @@
             {{ saving() ? 'Saving…' : (editingId() ? 'Save Changes' : 'Add Route') }}
           </button>
         </div>
-
       </form>
     </div>
   </div>

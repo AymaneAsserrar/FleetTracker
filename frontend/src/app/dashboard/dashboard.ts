@@ -42,6 +42,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private map?: L.Map;
   private markers = new Map<number, L.Marker>();
+  private routePolyline?: L.Polyline;
+  private routeStartMarker?: L.Marker;
+  private routeEndMarker?: L.Marker;
   private mapReady = false;
   private dataReady = false;
 
@@ -85,6 +88,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.clearRoute();
     this.map?.remove();
   }
 
@@ -180,18 +184,84 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   refresh(): void {
+    this.clearRoute();
+    this.selectedTripId.set(null);
     this.loadData();
   }
 
   focusTrip(trip: Trip): void {
     this.selectedTripId.set(trip.id);
     const vehicle = this.vehicles().find(v => v.id === trip.vehicleId);
-    if (!vehicle?.latitude || !vehicle?.longitude || !this.map) return;
-    this.map.flyTo([vehicle.latitude, vehicle.longitude], 14, { duration: 1.2 });
-    const marker = this.markers.get(vehicle.id);
-    if (marker) {
-      setTimeout(() => marker.openPopup(), 1300);
+
+    this.clearRoute();
+
+    if (!this.map) return;
+
+    const hasStart = trip.startLatitude != null && trip.startLongitude != null;
+    const hasEnd   = trip.endLatitude   != null && trip.endLongitude   != null;
+
+    if (hasStart && hasEnd) {
+      const startLatLng: L.LatLngTuple = [trip.startLatitude!, trip.startLongitude!];
+      const endLatLng:   L.LatLngTuple = [trip.endLatitude!,   trip.endLongitude!];
+
+      const latlngs: L.LatLngTuple[] = [startLatLng];
+      if (vehicle?.latitude && vehicle?.longitude) {
+        latlngs.push([vehicle.latitude, vehicle.longitude]);
+      }
+      latlngs.push(endLatLng);
+
+      this.routePolyline = L.polyline(latlngs, {
+        color: '#6366f1',
+        weight: 4,
+        opacity: 0.8,
+        dashArray: '8 4',
+      }).addTo(this.map);
+
+      this.routeStartMarker = L.marker(startLatLng, {
+        icon: L.divIcon({
+          html: `<div style="width:14px;height:14px;border-radius:50%;background:#22c55e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`,
+          className: '',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+          popupAnchor: [0, -10],
+        }),
+      })
+        .bindPopup(`<div style="font:13px/1.6 system-ui,sans-serif"><strong>Start</strong></div>`)
+        .addTo(this.map);
+
+      this.routeEndMarker = L.marker(endLatLng, {
+        icon: L.divIcon({
+          html: `<div style="width:14px;height:14px;border-radius:50%;background:#ef4444;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>`,
+          className: '',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+          popupAnchor: [0, -10],
+        }),
+      })
+        .bindPopup(`<div style="font:13px/1.6 system-ui,sans-serif"><strong>End</strong></div>`)
+        .addTo(this.map);
+
+      const bounds = this.routePolyline.getBounds();
+      this.map.fitBounds(bounds.pad(0.3));
+
+      const marker = vehicle ? this.markers.get(vehicle.id) : undefined;
+      if (marker) setTimeout(() => marker.openPopup(), 800);
+
+    } else if (vehicle?.latitude && vehicle?.longitude) {
+      // No coordinates on trip — just fly to the vehicle
+      this.map.flyTo([vehicle.latitude, vehicle.longitude], 14, { duration: 1.2 });
+      const marker = this.markers.get(vehicle.id);
+      if (marker) setTimeout(() => marker.openPopup(), 1300);
     }
+  }
+
+  private clearRoute(): void {
+    this.routePolyline?.remove();
+    this.routeStartMarker?.remove();
+    this.routeEndMarker?.remove();
+    this.routePolyline = undefined;
+    this.routeStartMarker = undefined;
+    this.routeEndMarker = undefined;
   }
 
   tripBadgeClass(status: TripStatus): string {

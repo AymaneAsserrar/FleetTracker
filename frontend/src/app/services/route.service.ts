@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Route } from '../models/route.model';
+import { Route, Stop } from '../models/route.model';
 
 const BASE_URL = 'http://localhost:8080/api/routes';
 
@@ -29,5 +29,17 @@ export class RouteService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${BASE_URL}/${id}`);
+  }
+
+  getStopsByRoute(routeId: number): Observable<Stop[]> {
+    return this.http.get<Stop[]>(`http://localhost:8080/api/stops?routeId=${routeId}`);
+  }
+
+  createStop(stop: { name: string; latitude: number; longitude: number; sequenceOrder: number; routeId: number }): Observable<Stop> {
+    return this.http.post<Stop>('http://localhost:8080/api/stops', stop);
+  }
+
+  deleteStop(stopId: number): Observable<void> {
+    return this.http.delete<void>(`http://localhost:8080/api/stops/${stopId}`);
   }
 }

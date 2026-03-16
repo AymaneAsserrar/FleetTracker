@@ -20,8 +20,12 @@ public class StopController {
     private final StopService stopService;
 
     @GetMapping
-    @Operation(summary = "List all stops")
-    public ResponseEntity<List<StopDTO.Response>> getAll() {
+    @Operation(summary = "List all stops, optionally filtered by routeId")
+    public ResponseEntity<List<StopDTO.Response>> getAll(
+            @RequestParam(required = false) Long routeId) {
+        if (routeId != null) {
+            return ResponseEntity.ok(stopService.findByRoute(routeId));
+        }
         return ResponseEntity.ok(stopService.findAll());
     }
 

@@ -32,6 +32,18 @@ public class Trip {
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
+    @Column(name = "start_latitude")
+    private Double startLatitude;
+
+    @Column(name = "start_longitude")
+    private Double startLongitude;
+
+    @Column(name = "end_latitude")
+    private Double endLatitude;
+
+    @Column(name = "end_longitude")
+    private Double endLongitude;
+
     @Column(name = "start_time")
     private LocalDateTime startTime;
 

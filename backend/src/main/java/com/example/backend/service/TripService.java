@@ -57,6 +57,10 @@ public class TripService {
             trip.setDriver(driverRepository.findById(request.getDriverId())
                     .orElseThrow(() -> new EntityNotFoundException("Driver not found with id: " + request.getDriverId())));
         }
+        trip.setStartLatitude(request.getStartLatitude());
+        trip.setStartLongitude(request.getStartLongitude());
+        trip.setEndLatitude(request.getEndLatitude());
+        trip.setEndLongitude(request.getEndLongitude());
         trip.setStartTime(request.getStartTime());
         trip.setEndTime(request.getEndTime());
         if (request.getStatus() != null) trip.setStatus(request.getStatus());
@@ -90,6 +94,10 @@ public class TripService {
         } else {
             trip.setDriver(null);
         }
+        trip.setStartLatitude(request.getStartLatitude());
+        trip.setStartLongitude(request.getStartLongitude());
+        trip.setEndLatitude(request.getEndLatitude());
+        trip.setEndLongitude(request.getEndLongitude());
         if (request.getStartTime() != null) trip.setStartTime(request.getStartTime());
         if (request.getEndTime() != null) trip.setEndTime(request.getEndTime());
         if (request.getStatus() != null) trip.setStatus(request.getStatus());
@@ -120,6 +128,10 @@ public class TripService {
             r.setDriverId(t.getDriver().getId());
             r.setDriverName(t.getDriver().getName());
         }
+        r.setStartLatitude(t.getStartLatitude());
+        r.setStartLongitude(t.getStartLongitude());
+        r.setEndLatitude(t.getEndLatitude());
+        r.setEndLongitude(t.getEndLongitude());
         r.setStartTime(t.getStartTime());
         r.setEndTime(t.getEndTime());
         r.setStatus(t.getStatus());

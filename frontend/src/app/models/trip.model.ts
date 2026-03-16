@@ -13,6 +13,10 @@ export interface Trip {
   routeName?: string;
   driverId?: number;
   driverName?: string;
+  startLatitude?: number;
+  startLongitude?: number;
+  endLatitude?: number;
+  endLongitude?: number;
   startTime: string;
   endTime?: string;
   status: TripStatus;

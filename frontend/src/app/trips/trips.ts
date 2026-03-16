@@ -16,6 +16,10 @@ interface TripForm {
   vehicleId: number | null;
   routeId: number | null;
   driverId: number | null;
+  startLatitude: string;
+  startLongitude: string;
+  endLatitude: string;
+  endLongitude: string;
   startTime: string;
   endTime: string;
   status: TripStatus;
@@ -66,7 +70,7 @@ export class TripsComponent implements OnInit {
   });
 
   private blank(): TripForm {
-    return { vehicleId: null, routeId: null, driverId: null, startTime: '', endTime: '', status: TripStatus.SCHEDULED };
+    return { vehicleId: null, routeId: null, driverId: null, startLatitude: '', startLongitude: '', endLatitude: '', endLongitude: '', startTime: '', endTime: '', status: TripStatus.SCHEDULED };
   }
 
   ngOnInit() { this.load(); }
@@ -102,6 +106,10 @@ export class TripsComponent implements OnInit {
       vehicleId: t.vehicleId,
       routeId: t.routeId,
       driverId: t.driverId ?? null,
+      startLatitude: t.startLatitude != null ? String(t.startLatitude) : '',
+      startLongitude: t.startLongitude != null ? String(t.startLongitude) : '',
+      endLatitude: t.endLatitude != null ? String(t.endLatitude) : '',
+      endLongitude: t.endLongitude != null ? String(t.endLongitude) : '',
       startTime: this.toDatetimeLocal(t.startTime),
       endTime: this.toDatetimeLocal(t.endTime),
       status: t.status,
@@ -125,6 +133,10 @@ export class TripsComponent implements OnInit {
       vehicleId: Number(this.formData.vehicleId),
       routeId: Number(this.formData.routeId),
       driverId: this.formData.driverId ? Number(this.formData.driverId) : undefined,
+      startLatitude: this.formData.startLatitude ? parseFloat(this.formData.startLatitude) : undefined,
+      startLongitude: this.formData.startLongitude ? parseFloat(this.formData.startLongitude) : undefined,
+      endLatitude: this.formData.endLatitude ? parseFloat(this.formData.endLatitude) : undefined,
+      endLongitude: this.formData.endLongitude ? parseFloat(this.formData.endLongitude) : undefined,
       startTime: this.fromDatetimeLocal(this.formData.startTime),
       endTime: this.formData.endTime ? this.fromDatetimeLocal(this.formData.endTime) : undefined,
       status: this.formData.status,

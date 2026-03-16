@@ -15,18 +15,27 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- ── vehicles ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS vehicles (
-    id            BIGSERIAL PRIMARY KEY,
-    label         VARCHAR(255)        NOT NULL,
-    name          VARCHAR(255)        NOT NULL,
-    license_plate VARCHAR(255)        NOT NULL UNIQUE,
+    id            BIGSERIAL    PRIMARY KEY,
+    label         VARCHAR(255) NOT NULL,
+    name          VARCHAR(255) NOT NULL,
+    license_plate VARCHAR(255) NOT NULL UNIQUE,
     location      GEOMETRY(Point, 4326),
-    status        VARCHAR(50)         NOT NULL DEFAULT 'INACTIVE',
+    status        VARCHAR(50)  NOT NULL DEFAULT 'INACTIVE',
     last_updated  TIMESTAMP
+);
+
+-- ── drivers ──────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS drivers (
+    id             BIGSERIAL    PRIMARY KEY,
+    name           VARCHAR(255) NOT NULL,
+    age            BIGINT       NOT NULL,
+    is_manager     BOOLEAN      NOT NULL DEFAULT FALSE,
+    licence_number VARCHAR(255) NOT NULL
 );
 
 -- ── routes ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS routes (
-    id          BIGSERIAL PRIMARY KEY,
+    id          BIGSERIAL    PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
     description TEXT,
     active      BOOLEAN      NOT NULL DEFAULT TRUE,
@@ -36,29 +45,34 @@ CREATE TABLE IF NOT EXISTS routes (
 
 -- ── stops ────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS stops (
-    id             BIGSERIAL PRIMARY KEY,
-    name           VARCHAR(255)   NOT NULL,
+    id             BIGSERIAL        PRIMARY KEY,
+    name           VARCHAR(255)     NOT NULL,
     latitude       DOUBLE PRECISION NOT NULL,
     longitude      DOUBLE PRECISION NOT NULL,
     sequence_order INTEGER,
-    route_id       BIGINT         NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
-    created_at     TIMESTAMP      NOT NULL DEFAULT NOW()
+    route_id       BIGINT           NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
+    created_at     TIMESTAMP        NOT NULL DEFAULT NOW()
 );
 
 -- ── trips ────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS trips (
-    id         BIGSERIAL PRIMARY KEY,
-    vehicle_id BIGINT      NOT NULL REFERENCES vehicles(id),
-    route_id   BIGINT      NOT NULL REFERENCES routes(id),
-    start_time TIMESTAMP,
-    end_time   TIMESTAMP,
-    status     VARCHAR(50) NOT NULL DEFAULT 'SCHEDULED',
-    created_at TIMESTAMP   NOT NULL DEFAULT NOW()
+    id              BIGSERIAL        PRIMARY KEY,
+    vehicle_id      BIGINT           NOT NULL REFERENCES vehicles(id),
+    route_id        BIGINT           NOT NULL REFERENCES routes(id),
+    driver_id       BIGINT           REFERENCES drivers(id),
+    start_latitude  DOUBLE PRECISION,
+    start_longitude DOUBLE PRECISION,
+    end_latitude    DOUBLE PRECISION,
+    end_longitude   DOUBLE PRECISION,
+    start_time      TIMESTAMP,
+    end_time        TIMESTAMP,
+    status          VARCHAR(50)      NOT NULL DEFAULT 'SCHEDULED',
+    created_at      TIMESTAMP        NOT NULL DEFAULT NOW()
 );
 
 -- ── location_updates ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS location_updates (
-    id          BIGSERIAL PRIMARY KEY,
+    id          BIGSERIAL        PRIMARY KEY,
     vehicle_id  BIGINT           NOT NULL REFERENCES vehicles(id),
     latitude    DOUBLE PRECISION NOT NULL,
     longitude   DOUBLE PRECISION NOT NULL,
