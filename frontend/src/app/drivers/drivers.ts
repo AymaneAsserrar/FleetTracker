@@ -10,6 +10,7 @@ interface DriverForm {
   age: number | null;
   licenceNumber: string;
   isManager: boolean;
+  contactPhone: string;
 }
 
 @Component({
@@ -49,7 +50,7 @@ export class DriversComponent implements OnInit {
   });
 
   private blank(): DriverForm {
-    return { name: '', age: null, licenceNumber: '', isManager: false };
+    return { name: '', age: null, licenceNumber: '', isManager: false, contactPhone: '' };
   }
 
   ngOnInit() { this.load(); }
@@ -75,6 +76,7 @@ export class DriversComponent implements OnInit {
       age: d.age,
       licenceNumber: d.licenceNumber,
       isManager: d.isManager,
+      contactPhone: d.contactPhone,
     };
     this.showModal.set(true);
   }
@@ -85,7 +87,7 @@ export class DriversComponent implements OnInit {
   }
 
   isValid(): boolean {
-    return !!(this.formData.name?.trim() && this.formData.licenceNumber?.trim() && this.formData.age !== null && this.formData.age > 0);
+    return !!(this.formData.name?.trim() && this.formData.licenceNumber?.trim() && this.formData.contactPhone?.trim() && this.formData.age !== null && this.formData.age > 0);
   }
 
   save() {

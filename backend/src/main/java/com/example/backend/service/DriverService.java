@@ -61,6 +61,8 @@ public class DriverService {
             driver.setIsManager(request.getIsManager());
         if (request.getLicenceNumber() != null)
             driver.setLicenceNumber(request.getLicenceNumber());
+        if (request.getContactPhone() != null)
+            driver.setContactPhone(request.getContactPhone());
     }
 
     public DriverDTO.Response toResponse(Driver d) {
@@ -70,6 +72,7 @@ public class DriverService {
         r.setAge(d.getAge());
         r.setIsManager(d.getIsManager());
         r.setLicenceNumber(d.getLicenceNumber());
+        r.setContactPhone(d.getContactPhone());
         return r;
     }
 }

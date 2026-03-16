@@ -28,4 +28,7 @@ public class Driver {
     @Column(nullable = false)
     private String licenceNumber;
 
+    @Column(nullable = false)
+    private String contactPhone;
+
 }

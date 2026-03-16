@@ -12,6 +12,7 @@ public class DriverDTO {
         private Long age;
         private Boolean isManager;
         private String licenceNumber;
+        private String contactPhone;
     }
 
     @Data
@@ -22,5 +23,6 @@ public class DriverDTO {
         private Long age;
         private Boolean isManager;
         private String licenceNumber;
+        private String contactPhone;
     }
 }

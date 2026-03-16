@@ -4,4 +4,5 @@ export interface Driver {
   age: number;
   isManager: boolean;
   licenceNumber: string;
+  contactPhone: string;
 }

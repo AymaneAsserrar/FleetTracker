@@ -70,6 +70,7 @@
                 <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Name</th>
                 <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Age</th>
                 <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Licence Number</th>
+                <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Contact Phone</th>
                 <th class="text-left text-xs font-semibold text-gray-500 px-5 py-3">Role</th>
                 <th class="text-right text-xs font-semibold text-gray-500 px-5 py-3">Actions</th>
               </tr>
@@ -82,13 +83,14 @@
                     <td class="px-5 py-3.5"><div class="h-3.5 bg-gray-200 rounded w-32 animate-pulse"></div></td>
                     <td class="px-5 py-3.5"><div class="h-3.5 bg-gray-200 rounded w-10 animate-pulse"></div></td>
                     <td class="px-5 py-3.5"><div class="h-3.5 bg-gray-100 rounded w-28 animate-pulse"></div></td>
+                    <td class="px-5 py-3.5"><div class="h-3.5 bg-gray-100 rounded w-28 animate-pulse"></div></td>
                     <td class="px-5 py-3.5"><div class="h-5 bg-gray-100 rounded-full w-20 animate-pulse"></div></td>
                     <td class="px-5 py-3.5"><div class="h-7 bg-gray-100 rounded w-24 ml-auto animate-pulse"></div></td>
                   </tr>
                 }
               } @else if (filteredDrivers().length === 0) {
                 <tr>
-                  <td colspan="5" class="px-5 py-14 text-center">
+                  <td colspan="6" class="px-5 py-14 text-center">
                     <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                       <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -107,6 +109,7 @@
                     <td class="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap">{{ d.name }}</td>
                     <td class="px-5 py-3.5 text-gray-600 whitespace-nowrap">{{ d.age }}</td>
                     <td class="px-5 py-3.5 font-mono text-gray-600 whitespace-nowrap">{{ d.licenceNumber }}</td>
+                    <td class="px-5 py-3.5 text-gray-600 whitespace-nowrap">{{ d.contactPhone }}</td>
                     <td class="px-5 py-3.5">
                       <span [class]="roleBadge(d.isManager)">{{ d.isManager ? 'Manager' : 'Driver' }}</span>
                     </td>
@@ -193,6 +196,15 @@
               class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
             />
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1.5">Contact Phone <span class="text-red-500">*</span></label>
+          <input
+            [(ngModel)]="formData.contactPhone" name="contactPhone" type="tel" required
+            placeholder="e.g. +1 555 123 4567"
+            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+          />
         </div>
 
         <div class="flex items-center gap-3 py-1">

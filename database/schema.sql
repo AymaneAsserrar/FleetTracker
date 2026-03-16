@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS drivers (
     name           VARCHAR(255) NOT NULL,
     age            BIGINT       NOT NULL,
     is_manager     BOOLEAN      NOT NULL DEFAULT FALSE,
-    licence_number VARCHAR(255) NOT NULL
+    licence_number VARCHAR(255) NOT NULL,
+    contact_phone  VARCHAR(50)  NOT NULL
 );
 
 -- ── routes ───────────────────────────────────────────────────
