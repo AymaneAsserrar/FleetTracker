@@ -14,6 +14,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.hibernate.ObjectNotFoundException;
 
 import java.util.List;
 
@@ -129,8 +130,12 @@ public class TripService {
         r.setRouteId(t.getRoute().getId());
         r.setRouteName(t.getRoute().getName());
         if (t.getDriver() != null) {
-            r.setDriverId(t.getDriver().getId());
-            r.setDriverName(t.getDriver().getName());
+            try {
+                r.setDriverId(t.getDriver().getId());
+                r.setDriverName(t.getDriver().getName());
+            } catch (EntityNotFoundException | ObjectNotFoundException ignored) {
+                // driver was deleted but trip still references it — skip driver info
+            }
         }
         r.setStartLatitude(t.getStartLatitude());
         r.setStartLongitude(t.getStartLongitude());

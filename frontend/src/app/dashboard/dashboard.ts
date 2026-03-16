@@ -61,7 +61,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   maintenanceVehicles = computed(() =>
     this.vehicles().filter(v => v.status === VehicleStatus.MAINTENANCE).length
   );
-  totalDrivers = computed(() => this.drivers().length);
+  totalDrivers = computed(() => this.drivers().filter(d => !d.isManager).length);
   totalManagers = computed(() => this.drivers().filter(d => d.isManager).length);
   activeTrips = computed(() =>
     this.trips().filter(t => t.status === TripStatus.IN_PROGRESS)
@@ -70,6 +70,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.trips().filter(t => t.status === TripStatus.SCHEDULED).length
   );
   recentTrips = computed(() => [...this.trips()].slice(0, 10));
+
+  driverStats = computed(() =>
+    this.drivers()
+      .filter(d => !d.isManager)
+      .map(d => {
+        const driverTrips = this.trips().filter(t => t.driverId === d.id);
+        return {
+          ...d,
+          totalTrips: driverTrips.length,
+          activeTrips: driverTrips.filter(t => t.status === TripStatus.IN_PROGRESS).length,
+          completedTrips: driverTrips.filter(t => t.status === TripStatus.COMPLETED).length,
+          currentTrip: driverTrips.find(t => t.status === TripStatus.IN_PROGRESS) ?? null,
+        };
+      })
+  );
 
   selectedTripId = signal<number | null>(null);
 
