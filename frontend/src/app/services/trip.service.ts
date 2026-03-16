@@ -32,7 +32,8 @@ export class TripService {
   }
 
   updateStatus(id: number, status: TripStatus): Observable<Trip> {
-    return this.http.patch<Trip>(`${BASE_URL}/${id}/status`, { status });
+    const params = new HttpParams().set('status', status);
+    return this.http.patch<Trip>(`${BASE_URL}/${id}/status`, null, { params });
   }
 
   delete(id: number): Observable<void> {
