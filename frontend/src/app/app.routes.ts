@@ -27,6 +27,10 @@ export const routes: Routes = [
         path: 'drivers',
         loadComponent: () => import('./drivers/drivers').then(m => m.DriversComponent),
       },
+      {
+        path: 'alerts',
+        loadComponent: () => import('./alerts/alerts').then(m => m.AlertsComponent),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

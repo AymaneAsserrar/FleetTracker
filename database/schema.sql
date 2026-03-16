@@ -70,6 +70,16 @@ CREATE TABLE IF NOT EXISTS trips (
     created_at      TIMESTAMP        NOT NULL DEFAULT NOW()
 );
 
+-- ── alerts ───────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS alerts (
+    id         BIGSERIAL    PRIMARY KEY,
+    trip_id    BIGINT       NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    type       VARCHAR(50)  NOT NULL DEFAULT 'LATE',
+    message    TEXT         NOT NULL,
+    resolved   BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
 -- ── location_updates ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS location_updates (
     id          BIGSERIAL        PRIMARY KEY,
